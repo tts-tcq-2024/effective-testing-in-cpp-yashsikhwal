@@ -42,7 +42,7 @@ int main() {
     alertInCelcius(400.5, realNetworkAlert);  // This should fail
 
     assert(alertFailureCount == 3);
-    std::cout << alertFailureCount << " alerts failed in production environment.\n";
+    std::cout << alertFailureCount << " alerts failed.\n";
     std::cout << "All is well (maybe!)\n";
     return 0;
 }
