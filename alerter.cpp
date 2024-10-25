@@ -1,31 +1,47 @@
 #include <iostream>
 #include <assert.h>
 
+// Global variable to count alert failures
 int alertFailureCount = 0;
 
+// Declare a function pointer type for network alert
+typedef int (*NetworkAlertFunc)(float);
+
+// Stub function for testing
 int networkAlertStub(float celcius) {
     std::cout << "ALERT: Temperature is " << celcius << " celcius.\n";
-    // Return 200 for ok
-    // Return 500 for not-ok
-    // stub always succeeds and returns 200
-    return 200;
+    // Stub always returns 500 for failure (simulate alert failure)
+    return 500;
 }
 
-void alertInCelcius(float farenheit) {
+// Real function for production (for demonstration purposes)
+int realNetworkAlert(float celcius) {
+    std::cout << "Sending real alert for temperature: " << celcius << " celcius.\n";
+    // Return 200 for ok and 500 for failure
+    return (celcius > 200.0) ? 500 : 200;
+}
+
+// Function to alert based on temperature, with injected network alert function
+void alertInCelcius(float farenheit, NetworkAlertFunc networkAlert) {
     float celcius = (farenheit - 32) * 5 / 9;
-    int returnCode = networkAlertStub(celcius);
+    int returnCode = networkAlert(celcius);
     if (returnCode != 200) {
-        // non-ok response is not an error! Issues happen in life!
-        // let us keep a count of failures to report
-        // However, this code doesn't count failures!
-        // Add a test below to catch this bug. Alter the stub above, if needed.
-        alertFailureCount += 0;
+        // Increment failure count on failure
+        alertFailureCount += 1;
     }
 }
 
 int main() {
-    alertInCelcius(400.5);
-    alertInCelcius(303.6);
+    // Test environment using the stub
+    alertInCelcius(400.5, networkAlertStub);  // This should fail
+    alertInCelcius(303.6, networkAlertStub);  // This should fail
+
+    assert(alertFailureCount == 2);
+    
+    alertInCelcius(150.0, realNetworkAlert);  // This should pass
+    alertInCelcius(400.5, realNetworkAlert);  // This should fail
+
+    assert(alertFailureCount == 3);
     std::cout << alertFailureCount << " alerts failed.\n";
     std::cout << "All is well (maybe!)\n";
     return 0;
